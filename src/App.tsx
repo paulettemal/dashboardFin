@@ -63,7 +63,7 @@ function App() {
 
         const formatDateTime = (dateTime: string) => {
           const [date, time] = dateTime.split("T");
-          return `${date}\n${time.substring(0, 5)}`; // Formatea fecha y hora
+          return `${date}\n${time.substring(0, 5)}`;
         };
 
         const dataToItems: Item[] = Array.from(times).map((time) => {
