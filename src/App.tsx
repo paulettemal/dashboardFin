@@ -46,7 +46,6 @@ function App() {
         const parser = new DOMParser();
         const xml = parser.parseFromString(savedTextXML, "application/xml");
 
-        // Set indicadores
         const name = xml.getElementsByTagName("name")[0]?.textContent || "";
         const location = xml.getElementsByTagName("location")[1];
         const latitude = location?.getAttribute("latitude") || "";
@@ -60,8 +59,13 @@ function App() {
           { title: "Altitude", subtitle: "altitud", value: altitude },
         ]);
 
-        // Set datos extendidos para la tabla
         const times = xml.getElementsByTagName("time");
+
+        const formatDateTime = (dateTime: string) => {
+          const [date, time] = dateTime.split("T");
+          return `${date}\n${time.substring(0, 5)}`; // Formatea fecha y hora
+        };
+
         const dataToItems: Item[] = Array.from(times).map((time) => {
           const temperatureElement = time.getElementsByTagName("temperature")[0];
           const windSpeedElement = time.getElementsByTagName("windSpeed")[0];
@@ -73,8 +77,8 @@ function App() {
             temp ? (parseFloat(temp) - 273.15).toFixed(2) : "N/A";
         
           return {
-            dateStart: time.getAttribute("from") || "N/A",
-            dateEnd: time.getAttribute("to") || "N/A",
+            dateStart: formatDateTime(time.getAttribute("from") || "N/A"),
+            dateEnd: formatDateTime(time.getAttribute("to") || "N/A"),
             precipitation: time.getElementsByTagName("precipitation")[0]?.getAttribute("value") || "0",
             humidity: time.getElementsByTagName("humidity")[0]?.getAttribute("value") || "0",
             clouds: time.getElementsByTagName("clouds")[0]?.getAttribute("all") || "0",
@@ -96,12 +100,28 @@ function App() {
 
     fetchWeatherData();
   }, []);
+  return (
+    <>
+      <header className="dashboard-header">
+      <nav className="navbar">
+          <ul>
+            <li><a href="#guayaquil-section">Inicio</a></li>
+            <li><a href="#metrics-section">Métricas</a></li>
+            <li><a href="#table-section">Tabla</a></li>
+          </ul>
+        </nav><h1>
+          Dashboard
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/1669/1669524.png"
+            alt="Weather Icon"
+          />
+        </h1>
+        
+      </header>
 
-  const renderIndicators = () => {
-    return (
-      <div className="background-container">
+      <div id="guayaquil-section" className="background-container">
         <div className="indicator-grid">
-          <Grid container spacing={2} justifyContent="center" alignItems="center" columns={12} sx={{ width: '100%' }}>
+          <Grid container spacing={2} justifyContent="center" alignItems="center" columns={12}>
             {indicators.map((indicator, idx) => (
               <Grid item xs={12} sm={6} md={3} key={idx}>
                 <IndicatorWeather title={indicator.title} subtitle={indicator.subtitle} value={indicator.value} />
@@ -110,24 +130,9 @@ function App() {
           </Grid>
         </div>
       </div>
-    );
-  };
 
-  return (
-    <>
-      <header className="dashboard-header">
-        <h1>Dashboard
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/1669/1669524.png"
-          alt="Weather Icon"
-        />
-        </h1>
-      </header>
-      <Grid container spacing={5}>
-        {renderIndicators()}
-
-        {/* Contenedor de métricas */}
-        <Grid container justifyContent="center" sx={{ width: '100%', margin: 0 }}>
+      <div id="metrics-section">
+        <Grid container justifyContent="center">
           <Grid item xs={12}>
             <Paper
               sx={{
@@ -157,14 +162,15 @@ function App() {
             </Paper>
           </Grid>
         </Grid>
+      </div>
 
-        {/* Tabla */}
+      <div id="table-section">
         <Grid container spacing={3} mt={4}>
           <Grid item xs={12}>
             <TableWeather itemsIn={items} />
           </Grid>
         </Grid>
-      </Grid>
+      </div>
     </>
   );
 }
